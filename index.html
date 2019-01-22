@@ -1,0 +1,133 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>Secrets of Grindea Number Puzzle Solver</title>
+</head>
+<body>
+<a href="https://github.com/TsReaper/sog-puzzle-solver"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<h1>Secrets of Grindea Number Puzzle Solver</h1>
+<p><label>Operators</label> <input id="op" placeholder="e.g. ++*-" /></p>
+<p><label>Numbers</label> <input id="num" placeholder="e.g. 33258" /></p>
+<p><label>Goal</label> <input id="goal" placeholder="e.g. 46" /></p>
+<button onclick="clicked()">Solve</button>
+<p><label>Answer</label> <input disabled="true" id="ans" /></p>
+<p id="hint" style="color: red"></p>
+<script type="text/javascript">
+var op = "";
+var num = "";
+var goal = "";
+
+function validate() {
+  var hint = document.getElementById("hint");
+
+  if (op == "") {
+    hint.innerHTML = "Invalid input! Operators must not be empty.";
+    return false;
+  }
+
+  if (num == "") {
+    hint.innerHTML = "Invalid input! Numbers must not be empty.";
+    return false;
+  }
+
+  if (goal == "") {
+    hint.innerHTML = "Invalid input! Goal must not be empty.";
+    return false;
+  }
+
+  if (op.length + 1 != num.length) {
+    hint.innerHTML = "Invalid input! Length of numbers must equal to length of operators plus one.";
+    return false;
+  }
+
+  for (var i = 0; i < op.length; i++) {
+    if (op[i] != '+' && op[i] != '-' && op[i] != '*') {
+      hint.innerHTML = "Invalid input! Operators can only consist of '+', '-' and '*'.";
+      return false;
+    }
+  }
+
+  for (var i = 0; i < num.length; i++) {
+    if (num[i] < '0' || num[i] > '9') {
+      hint.innerHTML = "Invalid input! Numbers can only consist of 0-9.";
+      return false;
+    }
+  }
+  
+  if (isNaN(parseInt(goal, 10))) {
+    hint.innerHTML = "Invalid input! Goal must be an integer.";
+    return false;
+  }
+
+  hint.innerHTML = "";
+  return true;
+}
+
+function permutations(s) {
+  if (s.length == 1) {
+    return [s];
+  }
+
+  var ret = [];
+  for (var i = 0; i < s.length; i++) {
+    var sub = permutations(s.substr(0, i) + s.substr(i + 1));
+    for (var j = 0; j < sub.length; j++) {
+      ret.push(s[i] + sub[j]);
+    }
+  }
+  return ret;
+}
+
+function calc(expr) {
+  var ret = expr[0] - '0';
+
+  for (var i = 1; i < expr.length; i += 2) {
+    if (expr[i] == '+') {
+      ret += expr[i + 1] - '0';
+    } else if (expr[i] == '-') {
+      ret -= expr[i + 1] - '0';
+    } else {
+      ret *= expr[i + 1] - '0';
+    }
+  }
+
+  return ret;
+}
+
+function solve() {
+  var opPerm = permutations(op);
+  var numPerm = permutations(num);
+  var goalNum = parseInt(goal);
+
+  for (var i = 0; i < numPerm.length; i++) {
+    var n = numPerm[i];
+    for (var j = 0; j < opPerm.length; j++) {
+      var o = opPerm[j];
+      var expr = "";
+      for (var k = 0; k < n.length; k++) {
+        expr += n[k];
+        if (k != n.length - 1) {
+          expr += o[k];
+        }
+      }
+
+      if (calc(expr) == goalNum) {
+        document.getElementById("ans").value = expr;
+        return;
+      }
+    }
+  }
+}
+
+function clicked() {
+  op = document.getElementById("op").value;
+  num = document.getElementById("num").value;
+  goal = document.getElementById("goal").value;
+
+  if (validate()) {
+    solve();
+  }
+}
+</script>
+</body>
+</html>
